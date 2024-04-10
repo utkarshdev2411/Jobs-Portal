@@ -104,11 +104,11 @@ router.put('/update/user', verifyToken, async (req, res) => {
 router.get('/viewall/job', verifyToken, async (req, res) => {
     try {
         const applications = await Application.find();
-        const applicationList = [];
-        for (let i = 0; i < applications.length; i++) {
-            const { title, description, salary, location, jobType } = applications[i];
-            applicationList.push({ title, description, salary, location, jobType });
-        }
+        
+        const applicationList = applications.map(application => {
+            const { title, description, salary, location, jobType } = application;
+            return { title, description, salary, location, jobType };
+        });
         return res.status(200).json(applicationList);
     } catch (error) {
         res.status(500).send('Internal Server Error');

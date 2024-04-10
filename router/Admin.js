@@ -99,33 +99,102 @@ router.post('/new/application/:id', verifyToken, async (req, res) => {
 
 router.put('/update/application/:id', verifyToken, async (req, res) => {
     try {
-        const applicationId = req.params.id;
+        const { id } = req.params;
         const { title, description, salary, location, jobType } = req.body;
-        let application = await Application.findByIdAndUpdate(applicationId, {
-            title: title, description: description, salary: salary, location: location, jobType: jobType
+        let application = await Application.findByIdAndUpdate(id, {
+            title, description, salary, location, jobType
         });
-        application = await Application.findById(applicationId);
+        application = await Application.findById(id);
         return res.status(200).json(application);
-
-
     } catch (error) {
         res.status(500).send('Internal Server Error');
     }
-}
-);
+});
 
 
 
 router.delete('/delete/application/:id', verifyToken, async (req, res) => {
     try {
         const applicationId = req.params.id;
-         await Application.findByIdAndDelete(applicationId);
+        await Application.findByIdAndDelete(applicationId);
         return res.status(200).json("Application Deleted");
     } catch (error) {
         res.status(500).json('Internal Server Error');
     }
 }
 );
+
+
+
+router.get('/view/applicant/:id', verifyToken, async (req, res) => {
+    try {
+        const applicationId = req.params.id;
+        const application = await Application.findById(applicationId);
+        const applicantList = application.user.map(user => {
+            return { user };
+        });
+        return res.status(200).json(applicantList);
+    } catch (error) {
+        res.status(500).json('Internal Server Error');
+    }
+}
+);
+
+router.patch('/applicant/:id/:applicantid', verifyToken, async (req, res) => {
+    try {
+        const applicationId = req.params.id;
+        const applicantId = req.params.applicantid;
+        let application = await Application.findById(applicationId);
+        application.user.remove(applicantId);
+        await application.save();
+        return res.status(200).json('Applicant Removed');
+    } catch (error) {
+        res.status(500).json('Internal Server Error');
+    }
+}
+);
+
+
+
+
+
+router.patch('/jobs/:id/status/change', verifyToken, async (req, res) => {
+    try {
+        const applicationId = req.params.id;
+        let application = await Application.findById(applicationId);
+        application.available = !application.available;
+        await application.save();
+        return res.status(200).json({ application, message: 'Status Changed' });
+
+    } catch (error) {
+        res.status(500).json('Internal Server Error');
+        console.log(error)
+    }
+}
+);
+
+
+router.get('/viewall/job/:adminid', verifyToken, async (req, res) => {
+
+    try {
+        const adminId = req.params.id;
+        const applications = await Application.find(adminId);
+        return res.status(200).json(applications);
+    }
+    catch (error) {
+        res.status(500).send('Internal Server Error');
+        console.log(error);
+    }
+}
+);
+
+
+
+
+
+
+
+
 
 
 module.exports = router;

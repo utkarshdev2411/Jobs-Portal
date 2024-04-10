@@ -35,7 +35,7 @@ const jobSchema = new mongoose.Schema({
         required: true
     },
     user: [{
-        type: ObjectId,
+        type: String,
         // ref: "User",
         unique: true
     }],
