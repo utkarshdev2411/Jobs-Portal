@@ -34,6 +34,12 @@ const jobSchema = new mongoose.Schema({
         // ref: "JobType",
         required: true
     },
+    savedbyuser:[{
+        type: String,
+        // ref: "User",
+        unique: true
+    }],
+
     user: [{
         type: String,
         // ref: "User",

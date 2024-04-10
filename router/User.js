@@ -104,10 +104,10 @@ router.put('/update/user', verifyToken, async (req, res) => {
 router.get('/viewall/job', verifyToken, async (req, res) => {
     try {
         const applications = await Application.find();
-        
+
         const applicationList = applications.map(application => {
-            const { title, description, salary, location, jobType } = application;
-            return { title, description, salary, location, jobType };
+            const { title, description, salary, location, jobType ,id} = application;
+            return { title, description, salary, location, jobType,id };
         });
         return res.status(200).json(applicationList);
     } catch (error) {
@@ -120,12 +120,32 @@ router.get('/viewall/job', verifyToken, async (req, res) => {
 
 
 
-router.put('/apply/job/:id', verifyToken, async (req, res) => {
+router.put('/apply/job/:jobid/:userid', verifyToken, async (req, res) => {
+    try {
+        const jobId = req.params.jobid;
+        const user = await req.params.userid;
+        let application = await Application.findByIdAndUpdate(jobId, {
+            $addToSet: { user: user }
+           
+        });
+         application = await Application.findById(jobId);
+        return res.status(200).json(application);   
+
+        
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+    }
+}
+);
+
+
+
+router.put('/save/job/:id', verifyToken, async (req, res) => {
     try {
         const jobId = req.params.id;
         const user = await req.user.id;
         let application = await Application.findByIdAndUpdate(jobId, {
-            $addToSet: { user: user }
+            $addToSet: { savedbyuser: user }
            
         });
          application = await Application.findById(jobId);
@@ -138,5 +158,20 @@ router.put('/apply/job/:id', verifyToken, async (req, res) => {
     }
 }
 );
+
+
+router.get('/view/my/application', verifyToken, async (req, res) => {
+    try {
+        const user = await req.user.id;
+        const application = await Application.find({ user: user });
+        return res.status(200).json(application);
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+        console.log(error);
+    }
+}   
+);
+
+
 
 module.exports = router;

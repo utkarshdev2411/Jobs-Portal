@@ -54,7 +54,7 @@ router.post('/new/admin', async (req, res) => {
 
 router.get('/login', async (req, res) => {
     try {
-        let admin = await User.findOne({ email: req.body.email });
+        let admin = await Admin.findOne({ email: req.body.email });
         if (admin) {
             const comaprePassword = bcrypt.compareSync(req.body.password, admin.password);
             if (!comaprePassword) {
@@ -64,6 +64,8 @@ router.get('/login', async (req, res) => {
                 res.status(200).json({ admin, accessToken });
             }
 
+        } else {
+            console.log('User not found');
         }
 
     } catch (error) {
@@ -75,11 +77,9 @@ router.get('/login', async (req, res) => {
 
 
 
-router.post('/new/application/:id', verifyToken, async (req, res) => {
+router.post('/new/application/:adminid', verifyToken, async (req, res) => {
     try {
-        const adminId = req.params.id;
-        const admin = await Admin.findById(adminId);
-
+        const adminId = req.params.adminid;
         const { title, description, salary, location, jobType } = req.body;
         const application = await Application.create({
             title: title, description: description, salary: salary, location: location, jobType: jobType, admin: adminId
@@ -88,7 +88,6 @@ router.post('/new/application/:id', verifyToken, async (req, res) => {
 
     } catch (error) {
         res.status(500).json('Internal Server Error');
-        console.log(error);
     }
 }
 );
@@ -116,10 +115,11 @@ router.put('/update/application/:id', verifyToken, async (req, res) => {
 router.delete('/delete/application/:id', verifyToken, async (req, res) => {
     try {
         const applicationId = req.params.id;
-        await Application.findByIdAndDelete(applicationId);
-        return res.status(200).json("Application Deleted");
+        await Application.findByIdAndDelete(applicationId); return res.status(200).json("Application Deleted");
     } catch (error) {
         res.status(500).json('Internal Server Error');
+        console.log(error);
+
     }
 }
 );
@@ -158,6 +158,8 @@ router.patch('/applicant/:id/:applicantid', verifyToken, async (req, res) => {
 
 
 
+
+
 router.patch('/jobs/:id/status/change', verifyToken, async (req, res) => {
     try {
         const applicationId = req.params.id;
@@ -187,6 +189,7 @@ router.get('/viewall/job/:adminid', verifyToken, async (req, res) => {
     }
 }
 );
+
 
 
 
