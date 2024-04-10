@@ -95,11 +95,42 @@ router.put('/update/user', verifyToken, async (req, res) => {
 }
 );
 
-router.put("/apply/job/:id", verifyToken, async (req, res) => {
+
+
+
+
+
+
+router.get('/viewall/job', verifyToken, async (req, res) => {
+    try {
+        const applications = await Application.find();
+        const applicationList = [];
+        for (let i = 0; i < applications.length; i++) {
+            const { title, description, salary, location, jobType } = applications[i];
+            applicationList.push({ title, description, salary, location, jobType });
+        }
+        return res.status(200).json(applicationList);
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+        console.log(error);
+    }
+});
+
+
+
+
+
+router.put('/apply/job/:id', verifyToken, async (req, res) => {
     try {
         const jobId = req.params.id;
-        
-        
+        const user = await req.user.id;
+        let application = await Application.findByIdAndUpdate(jobId, {
+            $addToSet: { user: user }
+           
+        });
+         application = await Application.findById(jobId);
+        return res.status(200).json(application);   
+
         
     } catch (error) {
         res.status(500).send('Internal Server Error');
@@ -107,7 +138,5 @@ router.put("/apply/job/:id", verifyToken, async (req, res) => {
     }
 }
 );
-
-
 
 module.exports = router;

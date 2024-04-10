@@ -36,7 +36,8 @@ const jobSchema = new mongoose.Schema({
     },
     user: [{
         type: ObjectId,
-        ref: "User",
+        // ref: "User",
+        unique: true
     }],
     admin: {
         type: String,
