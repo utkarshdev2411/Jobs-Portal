@@ -1,26 +1,17 @@
 const router = require('express').Router();
-const User = require('../Modal/User');
+const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
-const verifyToken = require('./verifyToken');
+const verifyToken = require('../middleware/verifyToken');
 const express = require('express');
-const Application = require('../Modal/Application');
-
-router.get('/user/:id', async (req, res) => {
-    try {
-        const userId = req.params.id;
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).send('User not found');
-        }
-        return res.status(200).json(user);
-    } catch (error) {
-        return res.status(500).send('Internal Server Error');
-    }
-});
+const Application = require('../models/Application');
+const mongoose = require('mongoose');
 
 
+
+
+//Creating new USER
 router.post('/new/user', async (req, res) => {
     try {
         let user = await User.findOne({
@@ -51,7 +42,7 @@ router.post('/new/user', async (req, res) => {
 );
 
 
-
+//Login for USER
 router.get('/login', async (req, res) => {
     try {
         let user = await User.findOne({
@@ -75,6 +66,21 @@ router.get('/login', async (req, res) => {
 }
 );
 
+//See user Details
+router.get('/user/:id', async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+        return res.status(200).json(user);
+    } catch (error) {
+        return res.status(500).send('Internal Server Error');
+    }
+});
+
+//Update USER
 router.put('/update/user', verifyToken, async (req, res) => {
 
     try {
@@ -96,18 +102,14 @@ router.put('/update/user', verifyToken, async (req, res) => {
 );
 
 
-
-
-
-
-
+//View all jobs
 router.get('/viewall/job', verifyToken, async (req, res) => {
     try {
         const applications = await Application.find();
 
         const applicationList = applications.map(application => {
-            const { title, description, salary, location, jobType ,id} = application;
-            return { title, description, salary, location, jobType,id };
+            const { title, description, salary, location, jobType, id } = application;
+            return { title, description, salary, location, jobType, id };
         });
         return res.status(200).json(applicationList);
     } catch (error) {
@@ -117,21 +119,19 @@ router.get('/viewall/job', verifyToken, async (req, res) => {
 });
 
 
-
-
-
+//Apply for a job
 router.put('/apply/job/:jobid/:userid', verifyToken, async (req, res) => {
     try {
         const jobId = req.params.jobid;
         const user = await req.params.userid;
         let application = await Application.findByIdAndUpdate(jobId, {
             $addToSet: { user: user }
-           
-        });
-         application = await Application.findById(jobId);
-        return res.status(200).json(application);   
 
-        
+        });
+        application = await Application.findById(jobId);
+        return res.status(200).json(application);
+
+
     } catch (error) {
         res.status(500).send('Internal Server Error');
     }
@@ -139,19 +139,19 @@ router.put('/apply/job/:jobid/:userid', verifyToken, async (req, res) => {
 );
 
 
-
+//Save a job
 router.put('/save/job/:id', verifyToken, async (req, res) => {
     try {
         const jobId = req.params.id;
         const user = await req.user.id;
         let application = await Application.findByIdAndUpdate(jobId, {
             $addToSet: { savedbyuser: user }
-           
-        });
-         application = await Application.findById(jobId);
-        return res.status(200).json(application);   
 
-        
+        });
+        application = await Application.findById(jobId);
+        return res.status(200).json(application);
+
+
     } catch (error) {
         res.status(500).send('Internal Server Error');
         console.log(error);
@@ -160,6 +160,7 @@ router.put('/save/job/:id', verifyToken, async (req, res) => {
 );
 
 
+//View my applications
 router.get('/view/my/application', verifyToken, async (req, res) => {
     try {
         const user = await req.user.id;
@@ -169,9 +170,26 @@ router.get('/view/my/application', verifyToken, async (req, res) => {
         res.status(500).send('Internal Server Error');
         console.log(error);
     }
-}   
+}
 );
 
+
+//Search for a job
+router.get("search/job", verifyToken, async (req, res) => {
+    try {
+        const { title, location, jobType } = req.body;
+        const application = await Application.find({
+            title: title,
+            location: location,
+            jobType: jobType
+        });
+        return res.status(200).json(application);
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+        console.log(error);
+    }
+}
+);
 
 
 module.exports = router;

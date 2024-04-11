@@ -1,14 +1,14 @@
 const router = require('express').Router();
-const Admin = require('../Modal/Admin');
+const Admin = require('../models/Admin');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const jwt = require('jsonwebtoken');
-const verifyToken = require('./verifyToken');
+const verifyToken = require('../middleware/verifyToken');
 const express = require('express');
-const Application = require('../Modal/Application');
+const Application = require('../models/Application');
 
 
-
+//See Admin Profile
 router.get('/admin/:id', async (req, res) => {
     try {
         const adminId = req.params.id;
@@ -23,6 +23,7 @@ router.get('/admin/:id', async (req, res) => {
 });
 
 
+//Creating new Admin
 router.post('/new/admin', async (req, res) => {
     try {
         let admin = await Admin.findOne({
@@ -51,7 +52,7 @@ router.post('/new/admin', async (req, res) => {
 );
 
 
-
+//Login for Admin
 router.get('/login', async (req, res) => {
     try {
         let admin = await Admin.findOne({ email: req.body.email });
@@ -76,26 +77,31 @@ router.get('/login', async (req, res) => {
 
 
 
-
+//Create new Application
 router.post('/new/application/:adminid', verifyToken, async (req, res) => {
     try {
         const adminId = req.params.adminid;
         const { title, description, salary, location, jobType } = req.body;
-        const application = await Application.create({
-            title: title, description: description, salary: salary, location: location, jobType: jobType, admin: adminId
+        const newApplication = await Application.create({
+            title: title,
+            description: description, 
+            salary: salary, 
+            location: location, 
+            jobType: jobType, 
+            admin: adminId
         });
-        return res.status(200).json(application);
+        // await Admin.findOneAndUpdate({'_id':adminId}, {$push: {application: newApplication}});
+        return res.status(201).json(newApplication);
 
     } catch (error) {
         res.status(500).json('Internal Server Error');
+        console.log(error);
     }
 }
 );
 
 
-
-
-
+//Update Application
 router.put('/update/application/:id', verifyToken, async (req, res) => {
     try {
         const { id } = req.params;
@@ -111,7 +117,7 @@ router.put('/update/application/:id', verifyToken, async (req, res) => {
 });
 
 
-
+//Delete Application
 router.delete('/delete/application/:id', verifyToken, async (req, res) => {
     try {
         const applicationId = req.params.id;
@@ -125,7 +131,7 @@ router.delete('/delete/application/:id', verifyToken, async (req, res) => {
 );
 
 
-
+//View all Applicants for a particular Application
 router.get('/view/applicant/:id', verifyToken, async (req, res) => {
     try {
         const applicationId = req.params.id;
@@ -140,6 +146,8 @@ router.get('/view/applicant/:id', verifyToken, async (req, res) => {
 }
 );
 
+
+//Remove Applicant from Application
 router.patch('/applicant/:id/:applicantid', verifyToken, async (req, res) => {
     try {
         const applicationId = req.params.id;
@@ -155,11 +163,7 @@ router.patch('/applicant/:id/:applicantid', verifyToken, async (req, res) => {
 );
 
 
-
-
-
-
-
+//Change Application Status from Available to Unavailable and vice versa
 router.patch('/jobs/:id/status/change', verifyToken, async (req, res) => {
     try {
         const applicationId = req.params.id;
@@ -176,6 +180,7 @@ router.patch('/jobs/:id/status/change', verifyToken, async (req, res) => {
 );
 
 
+//View all Applications
 router.get('/viewall/job/:adminid', verifyToken, async (req, res) => {
 
     try {
@@ -189,15 +194,6 @@ router.get('/viewall/job/:adminid', verifyToken, async (req, res) => {
     }
 }
 );
-
-
-
-
-
-
-
-
-
 
 
 module.exports = router;

@@ -1,26 +1,22 @@
-
 const mongoose = require('mongoose');
-const { ObjectId } = mongoose.Schema;
-
-
 const jobSchema = new mongoose.Schema({
 
     title: {
         type: String,
         trim: true,
-        required: [true, 'Title is required'],
+        require: [true, 'Title is required'],
         maxlength: 70,
     },
 
     description: {
         type: String,
         trim: true,
-        required: [true, 'Description is required'],
+        require: [true, 'Description is required'],
     },
     salary: {
         type: String,
         trim: true,
-        required: [true, 'Salary is required'],
+        require: [true, 'Salary is required'],
     },
     location: {
         type: String,
@@ -31,27 +27,21 @@ const jobSchema = new mongoose.Schema({
     },
     jobType: {
         type: String,
-        // ref: "JobType",
-        required: true
+        require: true
     },
-    savedbyuser:[{
+    savedbyuser: [{
         type: String,
-        // ref: "User",
-        unique: true
+        require: false
     }],
 
     user: [{
         type: String,
-        // ref: "User",
         unique: true
     }],
     admin: {
         type: String,
-        ref: "Admin",
-        required: true
+        require: true
     }
-
-
 
 }, { timestamps: true })
 

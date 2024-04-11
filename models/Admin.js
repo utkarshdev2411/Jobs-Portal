@@ -7,11 +7,11 @@ const AdminSchema = new mongoose.Schema({
 
     email: {
         type: String,
-        require:true,
-        unique:true
+        require: true,
+        unique: true
 
     },
- contact: {
+    contact: {
         type: String,
         require: true
     },
@@ -21,7 +21,7 @@ const AdminSchema = new mongoose.Schema({
         require: true
     },
 
-    application:[
+    application: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Application'
